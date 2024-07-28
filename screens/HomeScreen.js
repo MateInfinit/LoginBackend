@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   Button,
@@ -7,19 +8,33 @@ import {
   View,
   TouchableOpacity,
 } from "react-native";
-import {
-  useFonts,
-  PressStart2P_400Regular,
-} from "@expo-google-fonts/press-start-2p";
 
 export default function HomeScreen({ navigation }) {
-  let [fontsLoaded] = useFonts({
-    PressStart2P_400Regular,
-  });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  if (!fontsLoaded) {
-    return null;
-  }
+  const handleLogin = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/api/users/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert(data.message);
+        navigation.navigate("Welcome");
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error("Error logging in:", error);
+      alert("Login failed. Please try again.");
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -29,22 +44,25 @@ export default function HomeScreen({ navigation }) {
         placeholder="Email"
         placeholderTextColor="#888"
         keyboardType="email-address"
-        textContentType="emailAddress"
+        value={email}
+        onChangeText={setEmail}
       />
       <TextInput
         style={styles.input}
         placeholder="Password"
         placeholderTextColor="#888"
         secureTextEntry={true}
-        textContentType="password"
+        value={password}
+        onChangeText={setPassword}
       />
-      <TouchableOpacity style={styles.button}>
-        <Text
-          style={styles.buttonText}
-          onPress={() => navigation.navigate("Register")}
-        >
-          Register
-        </Text>
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <Text style={styles.buttonText}>Login</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate("Register")}
+      >
+        <Text style={styles.buttonText}>Register</Text>
       </TouchableOpacity>
       <StatusBar style="auto" />
     </View>
@@ -62,7 +80,6 @@ const styles = StyleSheet.create({
   text: {
     color: "yellow",
     fontSize: 40,
-    fontFamily: "PressStart2P_400Regular",
     marginBottom: 20,
   },
   input: {
@@ -72,7 +89,6 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 5,
     marginBottom: 10,
-    fontFamily: "PressStart2P_400Regular",
     color: "white",
   },
   button: {
@@ -87,6 +103,5 @@ const styles = StyleSheet.create({
     color: "black",
     fontSize: 16,
     fontWeight: "bold",
-    fontFamily: "PressStart2P_400Regular",
   },
 });
